@@ -12,10 +12,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+using System.Windows.Threading;
 namespace MatchGame
 {
-    using System.Windows.Threading;
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -24,6 +23,9 @@ namespace MatchGame
         DispatcherTimer timer = new DispatcherTimer();
         int tenthoOfSecondElapsed;
         int mathesFound;
+        float timeRecord;
+        float previosRecord;
+        bool gamePlayed;
         public MainWindow()
         {
 
@@ -31,6 +33,8 @@ namespace MatchGame
 
             timer.Interval = TimeSpan.FromSeconds(.1);
             timer.Tick += Timer_Tick;
+            Best_Score.Visibility = Visibility.Hidden;
+            gamePlayed = false;
             SetUpGame();
         }
 
@@ -38,9 +42,21 @@ namespace MatchGame
         {
             tenthoOfSecondElapsed++;
             timeTextBlock.Text = (tenthoOfSecondElapsed / 10F).ToString("0.0s");
+
             if(mathesFound == 8)
             {
                 timer.Stop();
+                timeRecord = tenthoOfSecondElapsed / 10F;
+                if (!gamePlayed)
+                {
+                    Best_Score.Text = "Best time is" + timeTextBlock.Text;
+                    previosRecord = tenthoOfSecondElapsed / 10F;
+                }
+                else if(timeRecord < previosRecord)
+                {
+                    Best_Score.Text = "Best time is" + timeTextBlock.Text;
+                }
+                
                 timeTextBlock.Text = timeTextBlock.Text + "- Play again?";
             }
         }
@@ -62,8 +78,10 @@ namespace MatchGame
             Random random = new Random();
             foreach(TextBlock textBlock in mainGrid.Children.OfType<TextBlock>())
             {
-                if (textBlock.Name != "timeTextBlock")
+                if (textBlock.Name != "timeTextBlock" && textBlock.Name != "Best_Score")
                 {
+                    textBlock.Visibility = Visibility.Visible;
+                  
                     int index = random.Next(animalEmoji.Count);
                     string nextEmoji = animalEmoji[index];
                     textBlock.Text = nextEmoji;
@@ -107,8 +125,14 @@ namespace MatchGame
         {
             if (mathesFound == 8)
             {
+                gamePlayed = true;
+                Best_Score.Visibility = Visibility.Visible;
+
+                
+
                 SetUpGame(); 
             }
+            
         }
     }
 }
